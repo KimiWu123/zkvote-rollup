@@ -25,15 +25,9 @@ template HashLeftRight() {
 
   signal output hash;
 
-  component left_shift = ShiftRight(256, 3);
-  left_shift.in <== left;
-  component right_shift = ShiftRight(256, 3);
-  right_shift.in <== right;
-
-  component hasher = MultiMiMC7(2, 91);
-  left_shift.out ==> hasher.in[0];
-  right_shift.out ==> hasher.in[1];
-  hasher.k <== 0;
+  component hasher = HashMultiInputs(2)
+  hasher.ins[0] <== left;
+  hasher.ins[1] <== right;
 
   hash <== hasher.out;
 }
@@ -102,7 +96,7 @@ template HashMultiInputs(n) {
     component shifted_ins[n];
     for (var i=0; i<n; i++) {
         shifted_ins[i] = ShiftRight(256, 3);
-        shifted_ins[i].in <== ins[0]
+        shifted_ins[i].in <== ins[i]
     }
 
     component hasher = MultiMiMC7(n, 91);
@@ -153,8 +147,7 @@ template calcBallot() {
 template zkVoteRollup(nTx, nLevels) {
 
     signal input new_proof_root;
-    signal input ballot_Yes;     // TODO: to weak..., try to binding with other state
-    signal input ballot_No;
+    signal input ballots[2];     // TODO: to weak..., try to binding with other state
     signal input fake_zero;
 
     // content of proof tree
@@ -166,8 +159,8 @@ template zkVoteRollup(nTx, nLevels) {
     signal private input pf_path_paths[nTx][nLevels];
 
     // signature on hash(proof) with node_pk
-    signal private input sig_r[2];
-    signal private input sig_s;
+    signal private input sig_r[nTx][2];
+    signal private input sig_s[nTx];
     signal private input node_pk[2];
 
     // output
@@ -175,8 +168,8 @@ template zkVoteRollup(nTx, nLevels) {
     signal output out_final_Yes;
     signal output out_final_No;
 
-    out_final_Yes <== ballot_Yes;
-    out_final_No <== ballot_No;
+    out_final_Yes <== ballots[0];
+    out_final_No <== ballots[1];
 
     component hashedLeaf[nTx];
     component sig_verifier[nTx];
@@ -187,15 +180,15 @@ template zkVoteRollup(nTx, nLevels) {
         // 0. get merkle leaf
         hashedLeaf[i] = HashMultiInputs(2);
         hashedLeaf[i].ins[0] <== proof_external_proof[i]
-        hashedLeaf[i].ins[0] <== proof_opinion[i]
+        hashedLeaf[i].ins[1] <== proof_opinion[i]
 
         // 1. verify signature
         sig_verifier[i] = EdDSAMiMCSpongeVerifier();
         sig_verifier[i].Ax <== node_pk[0];
         sig_verifier[i].Ay <== node_pk[1];
-        sig_verifier[i].R8x <== sig_r[0];
-        sig_verifier[i].R8y <== sig_r[1];
-        sig_verifier[i].S <== sig_s;
+        sig_verifier[i].R8x <== sig_r[i][0];
+        sig_verifier[i].R8y <== sig_r[i][1];
+        sig_verifier[i].S <== sig_s[i];
         sig_verifier[i].M <== hashedLeaf[i].out;
         sig_verifier[i].enabled <== (1 - fake_zero);
 
