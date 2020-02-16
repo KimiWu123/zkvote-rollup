@@ -110,8 +110,10 @@ template HashMultiInputs(n) {
 
 template calcBallot() {
     var OPINIONS = [
-        43379584054787486383572605962602545002668015983485933488536749112829893476306,  // YES
-        85131057757245807317576516368191972321038229705283732634690444270750521936266   // NO
+        // 43379584054787486383572605962602545002668015983485933488536749112829893476306,  // 1
+        // 85131057757245807317576516368191972321038229705283732634690444270750521936266   // 0
+        5049852429172545234685423733264756719186878340966653445126005684620919008623,
+        1202539508404354225557317172467969248695734861389822800983357337862518940862
     ];
 
     signal input opinion;
@@ -168,13 +170,13 @@ template zkVoteRollup(nTx, nLevels) {
     signal output out_final_Yes;
     signal output out_final_No;
 
-    out_final_Yes <== ballots[0];
-    out_final_No <== ballots[1];
 
     component hashedLeaf[nTx];
     component sig_verifier[nTx];
     component intermTree[nTx];
     component ballot[nTx];
+    var yes = 0;
+    var no = 0;
     for (var i=0; i<nTx; i++) {
         
         // 0. get merkle leaf
@@ -204,11 +206,13 @@ template zkVoteRollup(nTx, nLevels) {
         // 3. update ballot
         ballot[i] = calcBallot();
         ballot[i].opinion <== proof_opinion[i];
-        out_final_Yes <== out_final_Yes + ballot[i].yes;
-        out_final_No <== out_final_No + ballot[i].no;
+        yes += ballot[i].yes;
+        no += ballot[i].no;
     }
+    out_final_Yes <-- yes + ballots[0];
+    out_final_No <-- no + ballots[1];
 
     new_proof_root === proof_root[nTx - 1];
 }
 
-component main = zkVoteRollup(3, 4);
+component main = zkVoteRollup(2, 2);
