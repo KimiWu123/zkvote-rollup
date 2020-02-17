@@ -58,7 +58,7 @@ function rollup(private_key, proofs, proof_path, ballots) {
         'pf_path_elements': pf_path_elements,
         'pf_path_paths': pf_path_index,
 
-        'new_proof_root': roots[roots.length-1], 
+        // 'new_proof_root': roots[roots.length-1], 
         'ballots': ballots,
         fake_zero: bigInt(0),
     };

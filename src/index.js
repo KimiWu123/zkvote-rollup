@@ -116,10 +116,10 @@ let merkle_tree_test = (initValue) => {
 
 const gen = async () =>{
 
-  const cir_def = JSON.parse(fs.readFileSync('./circuit.json', 'utf8'));
+  const cir_def = JSON.parse(fs.readFileSync('./snark_data/circuit.json', 'utf8'));
   // const proving_key = JSON.parse(fs.readFileSync('./proving_key.json', 'utf8'));
-  const proving_key = fs.readFileSync('./proving_key.bin');
-  const verification_key = JSON.parse(fs.readFileSync('./verification_key.json', 'utf8'));
+  const proving_key = fs.readFileSync('./snark_data/proving_key.bin');
+  const verification_key = JSON.parse(fs.readFileSync('./snark_data/verification_key.json', 'utf8'));
   
 
   console.log("Proving key conversion...")
@@ -140,7 +140,7 @@ const gen = async () =>{
     else 
       proofs.push({"proof":proofB, "opinion":"NO"})
 
-    const tree = build_full_merkle_tree_example(2, i, rollup.get_proof_hash(String(proofs[i].proof), String(proofs[i].opinion)))
+    const tree = build_full_merkle_tree_example(8, i, rollup.get_proof_hash(String(proofs[i].proof), String(proofs[i].opinion)))
     // console.log(tree)
 
     proof_path.push({

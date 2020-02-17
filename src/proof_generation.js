@@ -19,7 +19,7 @@ const generateWitness = async function(cir_def, prvKey, proofs, proof_path, ball
         now = Date.now();
         const circuit = new snarkjs.Circuit(cir_def);
         console.log("Witness calculating...")
-        const w = circuit.calculateWitness(inputs);
+        const w = circuit.calculateWitness(snarkjsStringify.unstringifyBigInts(inputs));
         console.log(`calculating witness (took ${Date.now() - now} msecs)`);
         assert(circuit.checkWitness(w));
 
@@ -29,7 +29,7 @@ const generateWitness = async function(cir_def, prvKey, proofs, proof_path, ball
         //
         // verify witness content
         //
-        const root = w[circuit.getSignalIdx('main.new_proof_root')];
+        const root = w[circuit.getSignalIdx('main.out_final_proof_root')];
         // console.log(`root from proof:`, root);
         assert.equal(root.toString(), proof_path[proof_path.length-1].root);
     
