@@ -148,7 +148,7 @@ template calcBallot() {
     // }
 template zkVoteRollup(nTx, nLevels) {
 
-    signal input new_proof_root;
+    // signal input new_proof_root;
     signal input ballots[2];     // TODO: to weak..., try to binding with other state
     signal input fake_zero;
 
@@ -166,7 +166,7 @@ template zkVoteRollup(nTx, nLevels) {
     signal private input node_pk[2];
 
     // output
-    // signal output out_final_proof_root // pf_root[nTx-1]
+    signal output out_final_proof_root // pf_root[nTx-1]
     signal output out_final_Yes;
     signal output out_final_No;
 
@@ -212,7 +212,7 @@ template zkVoteRollup(nTx, nLevels) {
     out_final_Yes <-- yes + ballots[0];
     out_final_No <-- no + ballots[1];
 
-    new_proof_root === proof_root[nTx - 1];
+    out_final_proof_root <== proof_root[nTx - 1];
 }
 
-component main = zkVoteRollup(2, 2);
+component main = zkVoteRollup(3, 8);

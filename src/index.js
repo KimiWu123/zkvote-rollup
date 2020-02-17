@@ -116,20 +116,20 @@ let merkle_tree_test = (initValue) => {
 
 const gen = async () =>{
 
-  const cir_def = JSON.parse(fs.readFileSync('./snark_data/circuit.json', 'utf8'));
-  const proving_key = JSON.parse(fs.readFileSync('./snark_data/proving_key.json', 'utf8'));
-  // const proving_key = fs.readFileSync('../snark_data/proving_key.bin');
-  const verification_key = JSON.parse(fs.readFileSync('./snark_data/verification_key.json', 'utf8'));
+  const cir_def = JSON.parse(fs.readFileSync('./circuit.json', 'utf8'));
+  // const proving_key = JSON.parse(fs.readFileSync('./proving_key.json', 'utf8'));
+  const proving_key = fs.readFileSync('./proving_key.bin');
+  const verification_key = JSON.parse(fs.readFileSync('./verification_key.json', 'utf8'));
   
 
-  // console.log("Proof conversion...")
-  // let now = Date.now()
-  // var pk = new ArrayBuffer(proving_key.length);
-  // var arr = new Uint32Array(pk);
-  // for (var i=0; i<proving_key.length/4; i++) {
-  //     arr[i] = new Uint32Array(proving_key.buffer.slice(4*i, 4*i+4))
-  // }
-  // console.log(`proof conversion (took ${Date.now()-now} msecs)`);
+  console.log("Proving key conversion...")
+  let now = Date.now()
+  var pk = new ArrayBuffer(proving_key.length);
+  var arr = new Uint32Array(pk);
+  for (var i=0; i<proving_key.length/4; i++) {
+      arr[i] = new Uint32Array(proving_key.buffer.slice(4*i, 4*i+4))
+  }
+  console.log(`Proving key conversion (took ${Date.now()-now} msecs)`);
 
   const private_key = "00010203040506070809000102030405060708090001020304050607080900ff"
   let proof_path = []
@@ -140,9 +140,9 @@ const gen = async () =>{
     else 
       proofs.push({"proof":proofB, "opinion":"NO"})
 
-    const tree = build_full_merkle_tree_example(4, i, rollup.get_proof_hash(String(proofs[i].proof), String(proofs[i].opinion)))
+    const tree = build_full_merkle_tree_example(2, i, rollup.get_proof_hash(String(proofs[i].proof), String(proofs[i].opinion)))
     // console.log(tree)
-    // merkle_tree_test(rollup.get_proof_hash(String(proofs[i].proof), String(proofs[i].opinion)))
+
     proof_path.push({
       "root": tree[0],  
       "path_elements":tree[1], 
@@ -152,7 +152,7 @@ const gen = async () =>{
   // console.log(proof_path)
   const rollup_proof = await proof.generateProof(
       cir_def,
-      proving_key,
+      pk,
       verification_key,
       private_key, 
       proofs,
@@ -164,4 +164,5 @@ const gen = async () =>{
   console.log("output\n", rollup_proof)
 };
 
+// To run websnark with nodejs, using `--experimental-worker` flag
 gen()
